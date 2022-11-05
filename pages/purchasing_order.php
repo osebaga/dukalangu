@@ -24,36 +24,44 @@ include 'includes/connection.php';
                         $code = $_POST['product'];
                         $qty = $_POST['qty'];
                         $unit = $_POST['unit'];
-                        $cost = $_POST['costprice'];
-                        $selling = $_POST['sellingprice'];
+                        $supplier = $_POST['supplier'];
+                        // $selling = $_POST['sellingprice'];
                         $orderdate = $_POST['stockin'];
-                        $actual_amount = $qty * $cost;
-                        $check = mysqli_query(
-                            $conn,
-                            "SELECT * FROM product WHERE code='$code'"
-                        );
-                        if (mysqli_num_rows($check) > 0) {
-                            $insert = mysqli_query(
+                        // $actual_amount = $qty * $cost;
+                        $order_no = $_POST['orderno'];
+
+                        // $check = mysqli_query(
+                        //     $conn,
+                        //     "SELECT * FROM purching_order WHERE order_number='$order_no'"
+                        // );
+                            $insert = 
+                            mysqli_query(
                                 $conn,
-                                "UPDATE product set qty_stock='$qty',on_hand='$qty',price='$selling',unit='$unit',date_stock_in='$orderdate',purchasing_price='$cost',actual_amount='$actual_amount' WHERE code='$code'"
+                                "INSERT INTO purchasing_order(order_number,productcode,supplier_id,quantity,unit,order_date) VALUES('$order_no','$code','$supplier','$qty','$unit','$orderdate')"
+                        
                             );
                             if ($insert) {
                                 echo '<div class="alert alert-success" role="alert">
-                            Data Updated Successfully!!
+                            Data Saved Successfully!!
                           </div>';
                             } else {
                                 echo '<div class="alert alert-warning" role="alert">
-                            No Data Updated!!
+                            No Data Saved!!
                           </div>' . mysqli_error($conn);
                             }
                         }
-                    } ?>
-
+                    ?>
                     <div class="panel-body">
                         <div class="row">
                                 <form action="<?php echo htmlentities(
                                     $_SERVER['PHP_SELF']
                                 ); ?>" method="POST">
+                          <div class="col-lg-4">
+                                    <div class="form-group">
+                                            <label for="disabledSelect">Order Number</label>
+                                            <input type="text" name="orderno" value="<?php echo date('Yd').rand(11,99); ?>"  class="form-control"/>
+                                        </div>
+                                </div>
                           <div class="col-lg-4">
                                     <div class="form-group">
                                             <label for="disabledSelect">Product</label>
@@ -74,6 +82,33 @@ include 'includes/connection.php';
                                                     'code'
                                                 ]; ?>"><?php echo $row[
                                                     'pname'
+                                                ]; ?></option>
+                                           <?php }
+                                            ?>
+                                        </select>
+                                        </div>
+                                </div> 
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                            <label for="disabledSelect">Supplier</label>
+                                            <select type="text" name="supplier" required class="form-control" placeholder="GSM">
+                                            <option value="">select supplier</option>
+                                            <?php
+                                            $query = mysqli_query(
+                                                $conn,
+                                                'SELECT * FROM supplier'
+                                            );
+
+                                            while (
+                                                $row = mysqli_fetch_assoc(
+                                                    $query
+                                                )
+                                            ) { ?>
+                                                <option value="<?php echo $row[
+                                                    'supplier_id'
+                                                ]; ?>"><?php echo $row[
+                                                    'company_name'
                                                 ]; ?></option>
                                            <?php }
                                             ?>
@@ -102,7 +137,7 @@ include 'includes/connection.php';
                                         </select>
                                     </div>
                                     </div>
-                                    <div class="col-lg-4">
+                                    <!-- <div class="col-lg-4">
                                     <div class="form-group">
                                             <label for="disabledSelect">Purchasing Price</label>
                                             <input type="text" name="costprice" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))" placeholder="500"/>
@@ -113,7 +148,7 @@ include 'includes/connection.php';
                                             <label for="disabledSelect">Selling Price</label>
                                             <input type="text" name="sellingprice" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))" placeholder="1000"/>
                                         </div>
-                                </div>
+                                </div> -->
                                 <div class="col-lg-4">
                                     <div class="form-group">
                                             <label for="disabledSelect">Order Date</label>
@@ -122,25 +157,22 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                             <div class="text-center">
-                                    <button type="submit" name="savedata" class="btn btn-primary">Submit Order</button>
+                                    <button type="submit" name="savedata" class="btn btn-primary pull-right">Submit Order</button>
                     </div>
                                 </form>
+                                <br>
                         <hr>
                                     <div class="table-responsive">
                                         <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                                             <thead>
                                                 <tr>
                                                     <th>S/No</th>
-                                                    <th>Code</th>
-                                                    <th>Name</th>
+                                                    <th>Oder Number</th>
+                                                    <th>Product Name</th>
                                                     <th>Category</th>
                                                     <th>Supplier</th>
                                                     <th>Quantity</th>
-                                                    <th>Purchasing Price</th>
-                                                    <th>Selling Price</th>
-                                                    <th>Actual Amt</th>
                                                     <th>Units</th>
-
                                                     <th>Action</th>
                                                   
                                                 </tr>
@@ -150,14 +182,14 @@ include 'includes/connection.php';
                                                 $sn = 1;
                                                 $query = mysqli_query(
                                                     $conn,
-                                                    'SELECT * FROM product'
-                                                );
+                                                    'SELECT * FROM purchasing_order join supplier 
+                                                    ON supplier.supplier_id=purchasing_order.supplier_id join product on product.code=purchasing_order.productcode');
                                                 while (
                                                     $row_data = mysqli_fetch_assoc(
                                                         $query
                                                     )
                                                 ) { 
-                                                   
+                                                   $categ = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM product_category WHERE category_id='$row_data[category_id]'"));
                                                     ?>
                                                 <tr class="odd gradeX">
                                                 <td><?php
@@ -165,29 +197,21 @@ include 'includes/connection.php';
                                                 $sn++;
                                                 ?></td>
                                                     <td><?php echo $row_data[
-                                                        'code'
+                                                        'order_number'
                                                     ]; ?></td>
                                                     <td><?php echo $row_data[
                                                         'pname'
                                                     ]; ?></td>
+                                                    <td><?php echo 
+                                                        $categ['cname']
+                                                    ; ?></td>
                                                     <td><?php echo $row_data[
-                                                        'category_id'
+                                                        'company_name'
                                                     ]; ?></td>
                                                     <td><?php echo $row_data[
-                                                        'supplier_id'
+                                                        'quantity'
                                                     ]; ?></td>
-                                                    <td><?php echo $row_data[
-                                                        'qty_stock'
-                                                    ]; ?></td>
-                                                      <td><?php echo $row_data[
-                                                          'purchasing_price'
-                                                      ]; ?></td>
-                                                       <td><?php echo $row_data[
-                                                           'price'
-                                                       ]; ?></td>
-                                                        <td><?php echo $row_data[
-                                                           'actual_amount'
-                                                       ]; ; ?></td>
+                                                
                                                        <td><?php echo $row_data[
                                                            'unit'
                                                        ]; ?></td>
@@ -201,9 +225,9 @@ include 'includes/connection.php';
                                             </tbody>
                                         </table>
                                     </div>
-                                    <p class="pull-right"><b>Total Amount: <?php 
+                                    <!-- <p class="pull-right"><b>Total Amount: <?php 
                                     $amt = mysqli_fetch_assoc(mysqli_query($conn, "SELECT sum(actual_amount) as sum FROM product"));
-                                    echo $amt["sum"]; ?></b></p>
+                                    echo $amt["sum"]; ?></b></p> -->
                     </div>
                 </div>
 

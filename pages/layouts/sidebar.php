@@ -50,7 +50,7 @@
                                         <a href="flot.html">Stock Movement</a>
                                     </li>
                                     <li>
-                                        <a href="morris.html">Stock Adjustment</a>
+                                        <a href="stock_adjustment.php">Stock Adjustment</a>
                                     </li>
                                 </ul>
                                 <!-- /.nav-second-level -->
@@ -98,7 +98,7 @@
                                         <a href="#">Sales Order</a>
                                     </li>
                                     <li>
-                                        <a href="#">Cash Sales</a>
+                                        <a href="pos.php">Cash Sales</a>
                                     </li>
                                     <li>
                                         <a href="#">Invoice</a>

@@ -9,7 +9,7 @@ include 'includes/connection.php';
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h2 class="page-header">Product/Items</h2>
+                    <h2 class="page-header">Inventory</h2>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -18,38 +18,32 @@ include 'includes/connection.php';
                 <div class="col-sm-12">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                       Product List
+                       Stock Recording
                     </div>
-                    <?php if (isset($_POST['savedata'])) {
-                        $code = $_POST['pcode'];
-                        $pname = $_POST['pname'];
-                        $desc = $_POST['description'];
-                        // $unit = $_POST['unit'];
-                        $type = $_POST['type'];
-                        $cat = $_POST['category'];
-                        $supplier = $_POST['supplier'];
-                        $level = $_POST['level'];
-
+                    <?php if(isset($_POST['savedata'])) {
+                        $code = $_POST['product'];
+                        $qty = $_POST['qty'];
+                        $unit = $_POST['unit'];
+                        $cost = $_POST['costprice'];
+                        $selling = $_POST['sellingprice'];
+                        $orderdate = $_POST['stockin'];
+                        $actual_amount = $qty * $cost;
                         $check = mysqli_query(
                             $conn,
                             "SELECT * FROM product WHERE code='$code'"
                         );
                         if (mysqli_num_rows($check) > 0) {
-                            echo '<div class="alert alert-danger" role="alert">
-                        This account category already exists!
-                      </div>';
-                        } else {
                             $insert = mysqli_query(
                                 $conn,
-                                "INSERT INTO product(code,pname,description,product_type,category_id,supplier_id,reorder_level) VALUES('$code','$pname','$desc','$type','$cat','$supplier','$level')"
+                                "UPDATE product set qty_stock='$qty',on_hand='$qty',price='$selling',unit='$unit',date_stock_in='$orderdate',purchasing_price='$cost',actual_amount='$actual_amount' WHERE code='$code'"
                             );
                             if ($insert) {
                                 echo '<div class="alert alert-success" role="alert">
-                            Data Saved Successfully!!
+                            Data Updated Successfully!!
                           </div>';
                             } else {
                                 echo '<div class="alert alert-warning" role="alert">
-                            No Data Saved!!
+                            No Data Updated!!
                           </div>' . mysqli_error($conn);
                             }
                         }
@@ -60,28 +54,15 @@ include 'includes/connection.php';
                                 <form action="<?php echo htmlentities(
                                     $_SERVER['PHP_SELF']
                                 ); ?>" method="POST">
-                                   <div class="col-lg-4">
-                                <div class="form-group">
-                                        <label>Product Code</label>
-                                        <input type="text" name="pcode" value="<?php echo ('PROD-').rand(11,99); ?>"  class="form-control" required/>
-
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                <div class="form-group">
-                                        <label>Product Name</label>
-                                        <input class="form-control" name="pname"  placeholder="E.g Coca-Cola,Pepsi" required>
-                                    </div>
-                                </div>   
-                                <div class="col-lg-4">
+                          <div class="col-lg-4">
                                     <div class="form-group">
-                                            <label for="disabledSelect">Supplier Name</label>
-                                            <select type="text" name="supplier" required class="form-control" placeholder="GSM">
-                                            <option value="">select Supplier</option>
+                                            <label for="disabledSelect">Product</label>
+                                            <select type="text" name="product" required class="form-control" placeholder="GSM">
+                                            <option value="">select product</option>
                                             <?php
                                             $query = mysqli_query(
                                                 $conn,
-                                                'SELECT * FROM supplier'
+                                                'SELECT * FROM product'
                                             );
 
                                             while (
@@ -90,70 +71,26 @@ include 'includes/connection.php';
                                                 )
                                             ) { ?>
                                                 <option value="<?php echo $row[
-                                                    'supplier_id'
+                                                    'code'
                                                 ]; ?>"><?php echo $row[
-    'company_name'
-]; ?></option>
+                                                    'pname'
+                                                ]; ?></option>
                                            <?php }
                                             ?>
                                         </select>
                                         </div>
-                                </div>
-
-                                <div class="col-lg-4">
-                                <div class="form-group">
-                                        <label>Product Category</label>
-                                        <select class="form-control"  id="dynamic_select" name="category" required>
-                                        <option value="">select category</option>
-                                            <?php
-                                            $query = mysqli_query(
-                                                $conn,
-                                                'SELECT * FROM product_category'
-                                            );
-
-                                            while (
-                                                $row = mysqli_fetch_assoc(
-                                                    $query
-                                                )
-                                            ) { ?>
-                                                <option value="<?php echo $row[
-                                                    'category_id'
-                                                ]; ?>"><?php echo $row[
-    'cname'
-]; ?></option>
-                                           <?php }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-4">
-                                <div class="form-group">
-                                        <label>Product Type</label>
-                                        <select class="form-control" name="type" required>
-                                            <option value="">select type</option>
-                                            <option value="Stock">Stock</option>
-                                            <option value="Service">Service</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            
+                                </div> 
                                 <div class="col-lg-4">
                                     <div class="form-group">
-                                            <label for="disabledSelect">Reorder Level</label>
-                                            <input type="text" name="level" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))"/>
+                                            <label for="disabledSelect">Quantity</label>
+                                            <input type="text" name="qty" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))"/>
                                         </div>
                                 </div>
-                                <div class="col-lg-8">
-                                    <div class="form-group">
-                                        <label>Description</label>
-                                        <textarea type="text" name="description" class="form-control"></textarea>
-                                    </div>
-                                    </div>
-                                    <!-- <div class="col-lg-3">
+                           
+                                    <div class="col-lg-4">
                                     <div class="form-group">
                                         <label>Units</label>
-                                        <select type="text" name="unit" class="form-control">
+                                        <select type="text" name="unit" class="form-control" required>
                                             <option value="">select units</option>
                                             <option value="Kg">kilogram</option>
                                             <option value="Dozen">Dozen</option>
@@ -164,16 +101,28 @@ include 'includes/connection.php';
 
                                         </select>
                                     </div>
-                                    </div> -->
+                                    </div>
                                     <div class="col-lg-4">
                                     <div class="form-group">
-                                        <label>Expire Date</label>
-                                        <input type="date" name="expiredate" required class="form-control"/>
-                                    </div>
-                                    </div>
+                                            <label for="disabledSelect">Purchasing Price</label>
+                                            <input type="text" name="costprice" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))" placeholder="500"/>
+                                        </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                            <label for="disabledSelect">Selling Price</label>
+                                            <input type="text" name="sellingprice" class="form-control" required onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))" placeholder="1000"/>
+                                        </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                            <label for="disabledSelect">Stock in Date</label>
+                                            <input type="date" name="stockin" class="form-control" required/>
+                                        </div>
+                                </div>
                             </div>
                             <div class="text-center">
-                                    <button type="submit" name="savedata" class="btn btn-primary">Submit Button</button>
+                                    <button type="submit" name="savedata" class="btn btn-primary">Submit</button>
                     </div>
                                 </form>
                         <hr>
@@ -186,9 +135,10 @@ include 'includes/connection.php';
                                                     <th>Name</th>
                                                     <th>Category</th>
                                                     <th>Supplier</th>
-                                                    <th>Reorder Level</th>
+                                                    <th>Quantity</th>
                                                     <th>Purchasing Price</th>
                                                     <th>Selling Price</th>
+                                                    <th>Actual Amt</th>
                                                     <th>Units</th>
 
                                                     <th>Action</th>
@@ -200,16 +150,16 @@ include 'includes/connection.php';
                                                 $sn = 1;
                                                 $query = mysqli_query(
                                                     $conn,
-                                                    'SELECT * FROM product'
+                                                    'SELECT * FROM product join supplier 
+                                                    ON supplier.supplier_id=product.supplier_id 
+                                                    join product_category ON product_category.category_id=product.category_id'
                                                 );
                                                 while (
                                                     $row_data = mysqli_fetch_assoc(
                                                         $query
                                                     )
                                                 ) { 
-                                                    $categ = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM product_category WHERE category_id='$row_data[category_id]'"));
-                                                    $supplier = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM supplier WHERE supplier_id='$row_data[supplier_id]'"));
-
+                                                   
                                                     ?>
                                                 <tr class="odd gradeX">
                                                 <td><?php
@@ -222,14 +172,14 @@ include 'includes/connection.php';
                                                     <td><?php echo $row_data[
                                                         'pname'
                                                     ]; ?></td>
-                                                    <td><?php echo $categ[
+                                                    <td><?php echo $row_data[
                                                         'cname'
                                                     ]; ?></td>
-                                                    <td><?php echo $supplier[
+                                                    <td><?php echo $row_data[
                                                         'company_name'
                                                     ]; ?></td>
                                                     <td><?php echo $row_data[
-                                                        'reorder_level'
+                                                        'qty_stock'
                                                     ]; ?></td>
                                                       <td><?php echo $row_data[
                                                           'purchasing_price'
@@ -237,12 +187,13 @@ include 'includes/connection.php';
                                                        <td><?php echo $row_data[
                                                            'price'
                                                        ]; ?></td>
+                                                        <td><?php echo $row_data[
+                                                           'actual_amount'
+                                                       ]; ; ?></td>
                                                        <td><?php echo $row_data[
                                                            'unit'
                                                        ]; ?></td>
                                                    <td><i class="fa fa-edit" style="color: green;"></i><i class="fa fa-trash" style="color: red; margin-left: 6%" ></i></td>
-
-
                                                 </tr>
                                            
                                      <?php }
@@ -250,10 +201,12 @@ include 'includes/connection.php';
                                             </tbody>
                                         </table>
                                     </div>
+                                    <p class="pull-right"><b>Total Amount: <?php 
+                                    $amt = mysqli_fetch_assoc(mysqli_query($conn, "SELECT sum(actual_amount) as sum FROM product"));
+                                    echo $amt["sum"]; ?></b></p>
                     </div>
                 </div>
 
-                <!-- /.row (nested) -->
             </div>
         </div>
         <!-- /.panel -->
