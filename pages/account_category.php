@@ -4,7 +4,6 @@ include 'layouts/sidebar.php';
 include 'includes/connection.php';
 ?>
 <div id="wrapper">
-
     <div id="page-wrapper">
         <div class="container-fluid">
             <div class="row">
